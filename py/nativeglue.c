@@ -172,18 +172,18 @@ STATIC mp_obj_t mp_native_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter) {
     } else {
         obj = mp_getiter(obj, iter);
         if (obj != MP_OBJ_FROM_PTR(iter)) {
-            // Iterator didn't use the stack so indicate that with MP_OBJ_NULL.
-            iter->base.type = MP_OBJ_NULL;
+            // Iterator didn't use the stack so indicate that with NULL.
+            iter->base.type = NULL;
             iter->buf[0] = obj;
         }
-        return NULL;
+        return MP_OBJ_NULL;
     }
 }
 
 // wrapper that handles iterator buffer
 STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
     mp_obj_t obj;
-    if (iter->base.type == MP_OBJ_NULL) {
+    if (iter->base.type == NULL) {
         obj = iter->buf[0];
     } else {
         obj = MP_OBJ_FROM_PTR(iter);
@@ -203,7 +203,7 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
         nlr_pop();
     } else {
         ret_kind = MP_VM_RETURN_EXCEPTION;
-        *ret_value = nlr_buf.ret_val;
+        *ret_value = MP_OBJ_FROM_PTR(nlr_buf.ret_val);
     }
 
     if (ret_kind == MP_VM_RETURN_YIELD) {

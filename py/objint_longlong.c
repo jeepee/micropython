@@ -59,7 +59,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(mp_obj_is_type(self_in, &mp_type_int));
-    mp_obj_int_t *self = self_in;
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     long long val = self->val;
     if (big_endian) {
         byte *b = buf + len;
@@ -80,7 +80,7 @@ int mp_obj_int_sign(mp_obj_t self_in) {
     if (mp_obj_is_small_int(self_in)) {
         val = MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        mp_obj_int_t *self = self_in;
+        mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         val = self->val;
     }
     if (val < 0) {
@@ -93,7 +93,7 @@ int mp_obj_int_sign(mp_obj_t self_in) {
 }
 
 mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
-    mp_obj_int_t *o = o_in;
+    mp_obj_int_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
             return mp_obj_new_bool(o->val != 0);
@@ -114,7 +114,7 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             if (self->val >= 0) {
                 return o_in;
             }
-            self = mp_obj_new_int_from_ll(self->val);
+            self = MP_OBJ_TO_PTR(mp_obj_new_int_from_ll(self->val));
             // TODO could overflow long long
             self->val = -self->val;
             return MP_OBJ_FROM_PTR(self);
@@ -132,13 +132,13 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
     } else {
         assert(mp_obj_is_type(lhs_in, &mp_type_int));
-        lhs_val = ((mp_obj_int_t *)lhs_in)->val;
+        lhs_val = ((mp_obj_int_t *) MP_OBJ_TO_PTR(lhs_in))->val;
     }
 
     if (mp_obj_is_small_int(rhs_in)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
     } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
-        rhs_val = ((mp_obj_int_t *)rhs_in)->val;
+        rhs_val = ((mp_obj_int_t *) MP_OBJ_TO_PTR(rhs_in))->val;
     } else {
         // delegate to generic function to check for extra cases
         return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
@@ -246,7 +246,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
     o->val = val;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
@@ -257,7 +257,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
     o->val = val;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
@@ -268,14 +268,14 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, uns
     char *endptr;
     o->val = strtoll(*str, &endptr, base);
     *str = endptr;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
     if (mp_obj_is_small_int(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        const mp_obj_int_t *self = self_in;
+        const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
         return self->val;
     }
 }
